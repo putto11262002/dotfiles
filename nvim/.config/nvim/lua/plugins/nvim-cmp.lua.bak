@@ -1,0 +1,159 @@
+-- return {
+--   -- Main LSP Configuration
+--   'hrsh7th/nvim-cmp',
+--   dependencies = {
+--     { 'hrsh7th/cmp-nvim-lsp' },
+--     { 'hrsh7th/nvim-cmp' },
+--     { 'onsails/lspkind.nvim' },
+--     {
+--       'L3MON4D3/LuaSnip',
+--       version = '2.*',
+--       build = (function()
+--         -- Build Step is needed for regex support in snippets.
+--         -- This step is not supported in many windows environments.
+--         -- Remove the below condition to re-enable on windows.
+--         if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
+--           return
+--         end
+--         return 'make install_jsregexp'
+--       end)(),
+--       config = function()
+--         local ls = require 'luasnip'
+--
+--         local s = ls.snippet
+--         local t = ls.text_node
+--         local i = ls.insert_node
+--
+--         vim.keymap.set({ 'i' }, '<C-K>', function()
+--           ls.expand()
+--         end, { silent = true })
+--         vim.keymap.set({ 'i', 's' }, '<C-L>', function()
+--           ls.jump(1)
+--         end, { silent = true })
+--         vim.keymap.set({ 'i', 's' }, '<C-J>', function()
+--           ls.jump(-1)
+--         end, { silent = true })
+--
+--         vim.keymap.set({ 'i', 's' }, '<C-E>', function()
+--           if ls.choice_active() then
+--             ls.change_choice(1)
+--           end
+--         end, { silent = true })
+--
+--         ls.add_snippets('typescriptreact', {
+--           -- Snippet 1: Import Form components
+--           s('formimport', {
+--             t 'import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";',
+--           }),
+--
+--           -- Snippet 2: FormField boilerplate with FormControl
+--           s('formfield', {
+--             t '<FormField',
+--             t { '', '  control={form.control}', '  name="' },
+--             i(1, 'fieldName'),
+--             t { '"', '  render={({ field }) => (', '    <FormItem>', '      <FormLabel>' },
+--             i(2, 'Label'),
+--             t { '</FormLabel>', '      <FormControl>', '        ' },
+--             i(3, '<input {...field} />'), -- placeholder: replace with <Select>, <Checkbox>, etc.
+--             t { '', '      </FormControl>', '      <FormMessage />', '    </FormItem>', '  )}', '/>' },
+--           }),
+--         })
+--
+--         -- Load Lua snippets from lua/snippets/
+--
+--         -- (optional) load vscode-style snippets if you ever use them
+--         -- require("luasnip.loaders.from_vscode").lazy_load()
+--       end,
+--       dependencies = {
+--         -- `friendly-snippets` contains a variety of premade snippets.
+--         --    See the README about individual language/framework/plugin snippets:
+--         --    https://github.com/rafamadriz/friendly-snippets
+--         -- {
+--         --   'rafamadriz/friendly-snippets',
+--         --   config = function()
+--         --     require('luasnip.loaders.from_vscode').lazy_load()
+--         --   end,
+--         -- },
+--       },
+--       opts = {},
+--     },
+--     'folke/lazydev.nvim',
+--     'rafamadriz/friendly-snippets',
+--     'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
+--   },
+--   config = function()
+--     local lspkind = require 'lspkind'
+--     local cmp = require 'cmp'
+--     cmp.setup {
+--       formatting = {
+--         format = function(entry, vim_item)
+--           if vim.tbl_contains({ 'path' }, entry.source.name) then
+--             local icon, hl_group = require('nvim-web-devicons').get_icon(entry:get_completion_item().label)
+--             if icon then
+--               vim_item.kind = icon
+--               vim_item.kind_hl_group = hl_group
+--               return vim_item
+--             end
+--           end
+--           return require('lspkind').cmp_format { with_text = false }(entry, vim_item)
+--         end,
+--         -- format = lspkind.cmp_format {
+--         --   mode = 'symbol_text', -- show only symbol annotations
+--         --   maxwidth = {
+--         --     -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
+--         --     -- can also be a function to dynamically calculate max width such as
+--         --     -- menu = function() return math.floor(0.45 * vim.o.columns) end,
+--         --     menu = 50, -- leading text (labelDetails)
+--         --     abbr = 50, -- actual suggestion item
+--         --   },
+--         --   ellipsis_char = '...', -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
+--         --   show_labelDetails = true, -- show labelDetails in menu. Disabled by default
+--         --
+--         --   -- The function below will be called before any actual modifications from lspkind
+--         --   -- so that you can provide more controls on popup customization. (See [#30](https://github.com/onsails/lspkind-nvim/pull/30))
+--         --   before = function(entry, vim_item)
+--         --     -- ...
+--         --     return vim_item
+--         --   end,
+--         -- },
+--       },
+--       sources = {
+--         { name = 'path' },
+--         { name = 'nvim_lsp' },
+--         { name = 'luasnip' },
+--         { name = 'buffer' },
+--         { name = 'lazydev' },
+--       },
+--       window = {
+--         -- completion = cmp.config.window.bordered(),
+--         -- documentation = cmp.config.window.bordered(),
+--       },
+--       snippet = {
+--         expand = function(args)
+--           require('luasnip').lsp_expand(args.body)
+--         end,
+--       },
+--       mapping = cmp.mapping.preset.insert {
+--         -- jump to the next snippet placeholder
+--         ['<C-f>'] = cmp.mapping(function(fallback)
+--           local luasnip = require 'luasnip'
+--           if luasnip.locally_jumpable(1) then
+--             luasnip.jump(1)
+--           else
+--             fallback()
+--           end
+--         end, { 'i', 's' }),
+--
+--         -- jump to the previous snippet placeholder
+--         ['<C-b>'] = cmp.mapping(function(fallback)
+--           local luasnip = require 'luasnip'
+--           if luasnip.locally_jumpable(-1) then
+--             luasnip.jump(-1)
+--           else
+--             fallback()
+--           end
+--         end, { 'i', 's' }),
+--       },
+--     }
+--   end,
+-- }
