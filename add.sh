@@ -50,9 +50,6 @@ echo "Source:  $source"
 echo "Dest:    $dest"
 echo ""
 
-read -rp "Proceed? [y/N] " confirm
-[[ "$confirm" =~ ^[Yy]$ ]] || exit 0
-
 # Copy
 mkdir -p "$(dirname "$dest")"
 cp -R "$source" "$dest"
