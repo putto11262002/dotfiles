@@ -1,228 +1,205 @@
 # Dotfiles
 
-This repo stores my personal configuration files ("dotfiles") in one place and installs them into their expected locations using symlinks managed by **GNU Stow**. The goal is a repeatable setup across machines without manually copying files around.
-
-This repo is intentionally app-agnostic. Any config (shell, editor, terminal, window manager, etc.) can live here as long as it follows the same layout rules.
-
-## Quick Start
-
-```bash
-# New machine - run bootstrap
-git clone <your-remote-repo> ~/dotfiles
-cd ~/dotfiles
-./bootstrap.sh
-
-# Check status
-./status.sh
-
-# Add a new config
-./add.sh zsh ~/.zshrc
-
-# Sync changes across machines
-./sync.sh
-```
+Personal configuration files managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 ## How it works
 
-### Key idea
-- The repo contains one or more **packages** (top-level folders).
-- Each package mirrors the directory structure **relative to `$HOME`**.
-- Running `stow -t "$HOME" <package>` creates symlinks in `$HOME` that point back into this repo.
+- The repo contains **packages** (top-level directories like `nvim/`, `zsh/`)
+- Each package mirrors the directory structure relative to `$HOME`
+- Stow creates symlinks from `$HOME` pointing into this repo
 
-Example mapping:
-- Repo: `~/dotfiles/<package>/.config/example-app/config.toml`
-- Link: `~/.config/example-app/config.toml -> ~/dotfiles/<package>/.config/example-app/config.toml`
+Example:
+```
+dotfiles/nvim/.config/nvim/init.lua
+       ↓ stow
+~/.config/nvim/init.lua -> ~/dotfiles/nvim/.config/nvim/init.lua
+```
 
-### Why Stow
-- Keeps the repo clean and organized by package.
-- Creates symlinks safely (refuses to overwrite existing non-symlinks).
-- Easy to add/remove groups of configs per machine.
+## Prerequisites
 
-## Repo structure
+Install these manually before using:
 
-```text
+- `git`
+- `stow` (GNU Stow)
+
+```bash
+# macOS
+brew install stow
+
+# Ubuntu/Debian
+sudo apt install stow
+```
+
+## Structure
+
+```
 dotfiles/
-  nvim/                 # Package: neovim config
+  nvim/                 # package
     .config/
       nvim/
         init.lua
         lua/
           ...
-  <other-package>/      # More packages...
-    ...
-  bootstrap.sh          # Set up a new machine
-  sync.sh               # Pull changes and restow
-  add.sh                # Add a config to the repo
-  status.sh             # Check package/symlink status
+  zsh/                  # package
+    .zshrc
+  bootstrap.sh
+  sync.sh
+  add.sh
+  status.sh
   .gitignore
-  README.md
 ```
 
-Inside each package, put files exactly where they should appear under `$HOME`. Common examples:
-
-* `.<something>` files in home (e.g. `~/.zshrc` → `zsh/.zshrc`)
-* `~/.config/<app>/...` configs (e.g. `~/.config/nvim/` → `nvim/.config/nvim/`)
+Each top-level directory is a "package". Files inside mirror their location relative to `$HOME`.
 
 ## Scripts
 
-### `bootstrap.sh` - New machine setup
+Simple helper scripts. They fail fast with a message if something is wrong.
 
-Sets up dotfiles on a fresh machine. Installs prerequisites (git, stow) and stows all packages.
+| Script | What it does |
+|--------|--------------|
+| `./bootstrap.sh` | Stow all packages (requires stow installed) |
+| `./sync.sh` | Pull and restow (requires clean working tree) |
+| `./add.sh <pkg> <path>` | Add a config to a package |
+| `./status.sh` | List packages and their stow status |
+
+## Setup on a new machine
+
+1. Install prerequisites (git, stow)
+2. Clone and bootstrap:
 
 ```bash
-# If you already cloned the repo:
+git clone <repo> ~/dotfiles
 cd ~/dotfiles
 ./bootstrap.sh
-
-# Or one-liner (set DOTFILES_REPO first):
-DOTFILES_REPO=<url> curl -fsSL <raw-url>/bootstrap.sh | bash
 ```
 
-What it does:
-1. Detects OS (macOS/Linux)
-2. Installs `git` and `stow` if missing
-3. Clones the repo (if not already present)
-4. Stows all packages
+If stow reports conflicts, see [Handling conflicts](#handling-conflicts).
 
-### `sync.sh` - Pull and restow
+## Adding a new config
 
-Syncs your dotfiles with the remote repo. Use this on any machine to get the latest changes.
+Use the helper script:
 
 ```bash
-./sync.sh           # Pull and restow all packages
-./sync.sh --push    # Also push local commits after sync
+./add.sh zsh ~/.zshrc
+./add.sh alacritty ~/.config/alacritty
 ```
 
-What it does:
-1. Stashes uncommitted changes (if any)
-2. Pulls latest with rebase
-3. Restores stash
-4. Restows all packages (picks up new files/packages)
+Or manually:
 
-### `add.sh` - Add a config
+1. Create package structure:
+   ```bash
+   mkdir -p ~/dotfiles/zsh
+   ```
 
-Automates adding a new config file or directory to the repo.
+2. Copy config into package (preserving path relative to $HOME):
+   ```bash
+   cp ~/.zshrc ~/dotfiles/zsh/.zshrc
+   ```
 
-```bash
-./add.sh <package> <source-path>
+3. Remove original:
+   ```bash
+   rm ~/.zshrc
+   ```
 
-# Examples:
-./add.sh zsh ~/.zshrc              # Add .zshrc to 'zsh' package
-./add.sh git ~/.gitconfig          # Add .gitconfig to 'git' package
-./add.sh alacritty ~/.config/alacritty  # Add alacritty config
-```
+4. Stow:
+   ```bash
+   cd ~/dotfiles
+   stow -t "$HOME" zsh
+   ```
 
-What it does:
-1. Creates the package directory structure
-2. Copies the config (excluding `.git/` if present)
-3. Verifies the copy
-4. Removes the original
-5. Stows the package (creates symlink)
-6. Shows files that might need `.gitignore` entries
+5. Update `.gitignore` if the config generates cache/temp files:
+   ```bash
+   git status  # check for junk files
+   # edit .gitignore as needed
+   ```
 
-### `status.sh` - Check status
+6. Commit:
+   ```bash
+   git add -A
+   git commit -m "feat: add zsh config"
+   ```
 
-Shows the status of all packages and their symlinks.
+## Syncing changes
 
-```bash
-./status.sh           # Summary of all packages
-./status.sh nvim      # Detailed status for one package
-```
-
-Shows:
-- Which packages are stowed vs not stowed
-- File counts per package
-- Broken symlinks
-- Conflicts (real files blocking stow)
-- Git status (uncommitted changes, behind/ahead of remote)
-
-## Manual Operations
-
-### Update configs (day-to-day edits)
-
-Edit the file through the *linked* path as usual (e.g. `~/.config/...`), or edit inside the repo. Because the target is a symlink, changes go into the repo either way.
+On another machine (or after pushing changes from elsewhere):
 
 ```bash
 cd ~/dotfiles
-git status
-# (update .gitignore if needed)
+./sync.sh
+```
+
+This requires a clean working tree. If you have uncommitted changes:
+
+```bash
+git stash
+./sync.sh
+git stash pop
+```
+
+## Day-to-day edits
+
+Edit configs through the symlinked path (e.g. `~/.config/nvim/init.lua`) or directly in the repo. Changes go to the repo either way.
+
+```bash
+cd ~/dotfiles
 git add -A
 git commit -m "feat: update nvim keymaps"
 git push
 ```
 
-### Remove/uninstall a package's symlinks
+## Handling conflicts
 
-This removes symlinks created by Stow for that package (does not delete repo files):
+If stow refuses with "conflict", a real file exists at the target path.
+
+```bash
+# Back up the existing file
+mv ~/.zshrc ~/.zshrc.bak
+
+# Stow
+cd ~/dotfiles
+stow -t "$HOME" zsh
+
+# Compare and merge if needed, then remove backup
+diff ~/.zshrc.bak ~/.zshrc
+rm ~/.zshrc.bak
+```
+
+## Removing a package
+
+Unstow removes symlinks (does not delete repo files):
 
 ```bash
 cd ~/dotfiles
-stow -D -t "$HOME" <package>
+stow -D -t "$HOME" nvim
 ```
 
-### Preview changes (dry run)
-
-See what Stow would do without changing anything:
+## Manual stow commands
 
 ```bash
-cd ~/dotfiles
-stow -n -v -t "$HOME" <package>
+stow -t "$HOME" <package>       # link (install)
+stow -D -t "$HOME" <package>    # unlink (uninstall)
+stow -R -t "$HOME" <package>    # restow (unlink + link)
+stow -n -v -t "$HOME" <package> # dry run (preview)
 ```
 
-### Handling conflicts (when Stow refuses)
+## Machine-specific configs and secrets
 
-If Stow reports a conflict, it usually means a real file/dir already exists at the target path.
+**Never commit secrets** (API keys, tokens, private keys).
 
-Safe fix pattern:
+Options:
+- Use `*.local` files that are gitignored (e.g. `.zshrc` sources `.zshrc.local`)
+- Keep a `local/` package that is gitignored and only exists on that machine
 
-1. Back it up:
+## Updating .gitignore
 
-```bash
-mv ~/.config/example-app ~/.config/example-app.bak
-```
+Many tools generate cache/temp files inside config directories. When adding a new config:
 
-2. Restow:
-
-```bash
-cd ~/dotfiles
-stow -t "$HOME" <package>
-```
-
-3. Compare and merge changes from the backup if needed, then delete the backup.
-
-## Machine-specific settings and secrets
-
-Do not commit secrets (tokens, API keys, private keys). For machine-specific overrides:
-
-* Prefer `*.local` files that are **ignored by git**.
-* Or keep a `local/` package that is **gitignored** and only stowed on that machine.
-
-## Prerequisites
-
-* `git`
-* `stow` (GNU Stow)
-
-Install manually if needed:
-
-* macOS (Homebrew): `brew install stow git`
-* Debian/Ubuntu: `sudo apt install -y stow git`
-
-(Or just run `./bootstrap.sh` which handles this automatically)
-
-## Quick reference
-
-```bash
-# Scripts
-./bootstrap.sh              # Set up new machine
-./sync.sh                   # Pull and restow
-./sync.sh --push            # Pull, restow, and push
-./add.sh <pkg> <path>       # Add config to repo
-./status.sh                 # Show all package status
-./status.sh <pkg>           # Show detailed package status
-
-# Manual stow commands
-stow -t "$HOME" <package>           # Install (link) a package
-stow -D -t "$HOME" <package>        # Remove (unlink) a package
-stow -R -t "$HOME" <package>        # Restow (unlink + link)
-stow -n -v -t "$HOME" <package>     # Dry run + verbose
-```
+1. Run `git status` to spot generated files
+2. Add patterns to `.gitignore`:
+   ```gitignore
+   # Neovim
+   nvim/.config/nvim/spell/
+   nvim/.config/nvim/.luarc.json
+   nvim/.config/nvim/plugin/
+   ```
+3. Only track files you intentionally configured
