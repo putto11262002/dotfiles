@@ -1,8 +1,26 @@
 # Dotfiles
 
-This repo stores my personal configuration files (“dotfiles”) in one place and installs them into their expected locations using symlinks managed by **GNU Stow**. The goal is a repeatable setup across machines without manually copying files around.
+This repo stores my personal configuration files ("dotfiles") in one place and installs them into their expected locations using symlinks managed by **GNU Stow**. The goal is a repeatable setup across machines without manually copying files around.
 
 This repo is intentionally app-agnostic. Any config (shell, editor, terminal, window manager, etc.) can live here as long as it follows the same layout rules.
+
+## Quick Start
+
+```bash
+# New machine - run bootstrap
+git clone <your-remote-repo> ~/dotfiles
+cd ~/dotfiles
+./bootstrap.sh
+
+# Check status
+./status.sh
+
+# Add a new config
+./add.sh zsh ~/.zshrc
+
+# Sync changes across machines
+./sync.sh
+```
 
 ## How it works
 
@@ -22,155 +40,118 @@ Example mapping:
 
 ## Repo structure
 
-Top-level directories are Stow packages:
-
 ```text
 dotfiles/
-  <package-1>/
-    (paths relative to $HOME)
-  <package-2>/
-    (paths relative to $HOME)
-  bootstrap.sh        (optional helper)
+  nvim/                 # Package: neovim config
+    .config/
+      nvim/
+        init.lua
+        lua/
+          ...
+  <other-package>/      # More packages...
+    ...
+  bootstrap.sh          # Set up a new machine
+  sync.sh               # Pull changes and restow
+  add.sh                # Add a config to the repo
+  status.sh             # Check package/symlink status
   .gitignore
   README.md
-````
+```
 
 Inside each package, put files exactly where they should appear under `$HOME`. Common examples:
 
-* `.<something>` files in home (e.g. `~/.toolrc`)
-* `~/.config/<app>/...` configs
+* `.<something>` files in home (e.g. `~/.zshrc` → `zsh/.zshrc`)
+* `~/.config/<app>/...` configs (e.g. `~/.config/nvim/` → `nvim/.config/nvim/`)
 
-## Prerequisites
+## Scripts
 
-* `git`
-* `stow` (GNU Stow)
+### `bootstrap.sh` - New machine setup
 
-Install examples:
-
-* macOS (Homebrew): `brew install stow git`
-* Debian/Ubuntu: `sudo apt install -y stow git`
-
-## Bootstrap on a new machine
-
-1. Clone the repo
+Sets up dotfiles on a fresh machine. Installs prerequisites (git, stow) and stows all packages.
 
 ```bash
-git clone <your-remote-repo> ~/dotfiles
+# If you already cloned the repo:
 cd ~/dotfiles
+./bootstrap.sh
+
+# Or one-liner (set DOTFILES_REPO first):
+DOTFILES_REPO=<url> curl -fsSL <raw-url>/bootstrap.sh | bash
 ```
 
-2. Install `stow` (see prerequisites)
+What it does:
+1. Detects OS (macOS/Linux)
+2. Installs `git` and `stow` if missing
+3. Clones the repo (if not already present)
+4. Stows all packages
 
-3. Stow the packages you want
+### `sync.sh` - Pull and restow
+
+Syncs your dotfiles with the remote repo. Use this on any machine to get the latest changes.
 
 ```bash
-stow -t "$HOME" <package-1> <package-2>
+./sync.sh           # Pull and restow all packages
+./sync.sh --push    # Also push local commits after sync
 ```
 
-4. Verify symlinks
+What it does:
+1. Stashes uncommitted changes (if any)
+2. Pulls latest with rebase
+3. Restores stash
+4. Restows all packages (picks up new files/packages)
+
+### `add.sh` - Add a config
+
+Automates adding a new config file or directory to the repo.
 
 ```bash
-ls -la ~/.config
-# or inspect a specific file:
-ls -la ~/.config/example-app/config.toml
+./add.sh <package> <source-path>
+
+# Examples:
+./add.sh zsh ~/.zshrc              # Add .zshrc to 'zsh' package
+./add.sh git ~/.gitconfig          # Add .gitconfig to 'git' package
+./add.sh alacritty ~/.config/alacritty  # Add alacritty config
 ```
 
-## Common chores (How-to)
+What it does:
+1. Creates the package directory structure
+2. Copies the config (excluding `.git/` if present)
+3. Verifies the copy
+4. Removes the original
+5. Stows the package (creates symlink)
+6. Shows files that might need `.gitignore` entries
 
-### Add a new config file or directory to the system
+### `status.sh` - Check status
 
-Rule: **copy into repo → update `.gitignore` → remove original → stow**.
-
-Why update `.gitignore`:
-
-* Many tools generate caches, lockfiles, backups, session files, or plugin downloads inside config directories.
-* If you add a new config and suddenly see lots of generated files in `git status`, update `.gitignore` immediately so the repo only tracks what you intend.
-
-1. Create/mirror directories under the right package:
+Shows the status of all packages and their symlinks.
 
 ```bash
-mkdir -p ~/dotfiles/<package>/.config/example-app
+./status.sh           # Summary of all packages
+./status.sh nvim      # Detailed status for one package
 ```
 
-2. Copy your existing config into the repo:
+Shows:
+- Which packages are stowed vs not stowed
+- File counts per package
+- Broken symlinks
+- Conflicts (real files blocking stow)
+- Git status (uncommitted changes, behind/ahead of remote)
 
-```bash
-cp -a ~/.config/example-app ~/dotfiles/<package>/.config/
-```
-
-3. Update `.gitignore` to exclude generated files for this new config (as needed):
-
-```bash
-# edit ~/dotfiles/.gitignore
-git status   # use this to spot junk you should ignore
-```
-
-4. Remove the original (only after confirming the copy is correct):
-
-```bash
-rm -rf ~/.config/example-app
-```
-
-5. Restow the package:
-
-```bash
-cd ~/dotfiles
-stow -t "$HOME" <package>
-```
-
-6. Verify:
-
-```bash
-ls -la ~/.config/example-app
-```
+## Manual Operations
 
 ### Update configs (day-to-day edits)
 
 Edit the file through the *linked* path as usual (e.g. `~/.config/...`), or edit inside the repo. Because the target is a symlink, changes go into the repo either way.
-
-Important: if your edits introduce new generated files showing up in `git status`, update `.gitignore` so you do not accidentally commit caches/secrets/junk.
-
-Typical workflow:
 
 ```bash
 cd ~/dotfiles
 git status
 # (update .gitignore if needed)
 git add -A
-git commit -m "Update configs"
+git commit -m "feat: update nvim keymaps"
 git push
 ```
 
-### Add a brand new package
-
-1. Create the package and put files under `$HOME`-relative paths:
-
-```bash
-mkdir -p ~/dotfiles/<new-package>/.config/example-app
-```
-
-2. Add config files:
-
-```bash
-cp -a ~/.config/example-app ~/dotfiles/<new-package>/.config/
-```
-
-3. Update `.gitignore` for generated files (as needed):
-
-```bash
-git status
-# edit ~/dotfiles/.gitignore
-```
-
-4. Remove the original and stow it:
-
-```bash
-rm -rf ~/.config/example-app
-cd ~/dotfiles
-stow -t "$HOME" <new-package>
-```
-
-### Remove/uninstall a package’s symlinks
+### Remove/uninstall a package's symlinks
 
 This removes symlinks created by Stow for that package (does not delete repo files):
 
@@ -216,21 +197,32 @@ Do not commit secrets (tokens, API keys, private keys). For machine-specific ove
 * Prefer `*.local` files that are **ignored by git**.
 * Or keep a `local/` package that is **gitignored** and only stowed on that machine.
 
-## Notes
+## Prerequisites
 
-* Stow creates symlinks relative to the package contents; keep paths clean and predictable.
-* Keep generated files/caches out of the repo via `.gitignore`.
-* Use small packages to make it easy to stow only what you want per machine.
+* `git`
+* `stow` (GNU Stow)
+
+Install manually if needed:
+
+* macOS (Homebrew): `brew install stow git`
+* Debian/Ubuntu: `sudo apt install -y stow git`
+
+(Or just run `./bootstrap.sh` which handles this automatically)
 
 ## Quick reference
 
 ```bash
-# Install (link) packages
-stow -t "$HOME" <package...>
+# Scripts
+./bootstrap.sh              # Set up new machine
+./sync.sh                   # Pull and restow
+./sync.sh --push            # Pull, restow, and push
+./add.sh <pkg> <path>       # Add config to repo
+./status.sh                 # Show all package status
+./status.sh <pkg>           # Show detailed package status
 
-# Remove (unlink) packages
-stow -D -t "$HOME" <package...>
-
-# Dry run + verbose
-stow -n -v -t "$HOME" <package>
+# Manual stow commands
+stow -t "$HOME" <package>           # Install (link) a package
+stow -D -t "$HOME" <package>        # Remove (unlink) a package
+stow -R -t "$HOME" <package>        # Restow (unlink + link)
+stow -n -v -t "$HOME" <package>     # Dry run + verbose
 ```
