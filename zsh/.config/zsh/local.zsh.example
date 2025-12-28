@@ -1,9 +1,25 @@
 # Machine-specific configuration
 # Copy this to local.zsh and customize (local.zsh is gitignored)
 
-# Example: Work-specific settings
+# ----- Paths -----
+
+# LM Studio CLI
+[ -d "$HOME/.lmstudio/bin" ] && export PATH="$PATH:$HOME/.lmstudio/bin"
+
+# Bun
+[ -d "$HOME/.bun/bin" ] && export PATH="$PATH:$HOME/.bun/bin"
+
+# ----- Completions -----
+
+# NVM
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+
+# Bun completions
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# ----- Secrets / Work-specific -----
+
 # export WORK_API_KEY="..."
 # alias vpn="..."
-
-# Example: Machine-specific paths
-# export PATH="$PATH:/some/local/path"

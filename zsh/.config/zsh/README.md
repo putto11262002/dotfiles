@@ -7,11 +7,11 @@ Modular zsh configuration. The main `~/.zshrc` sources all `*.zsh` files from th
 ```
 ~/.config/zsh/
 ├── plugins.zsh      # Oh My Zsh, theme, plugins
-├── path.zsh         # PATH additions (conditional)
+├── path.zsh         # Universal PATH (homebrew, go)
 ├── aliases.zsh      # Shell aliases
 ├── keybindings.zsh  # Vi mode, search bindings
-├── completions.zsh  # Tool completions (nvm, bun, etc)
-├── local.zsh        # Machine-specific (gitignored)
+├── completions.zsh  # (placeholder, use local.zsh)
+├── local.zsh        # Machine-specific paths/completions (gitignored)
 └── install.sh       # Installs oh-my-zsh and plugins
 ```
 
@@ -48,13 +48,14 @@ To control order, prefix with numbers:
 ## Machine-specific settings
 
 Use `local.zsh` for:
+- Tool paths (nvm, bun, lmstudio, etc.)
+- Tool completions
 - Work vs personal machine differences
 - API keys and secrets (never commit these)
-- Paths that only exist on one machine
 
 ```bash
 cp local.zsh.example local.zsh
-# Edit local.zsh with your settings
+# Edit local.zsh - uncomment tools you have installed
 ```
 
 ## Adding a new plugin

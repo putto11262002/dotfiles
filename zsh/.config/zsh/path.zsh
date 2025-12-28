@@ -1,4 +1,5 @@
 # PATH additions - only adds if directory exists
+# Machine-specific paths go in local.zsh
 
 # Homebrew
 [ -d "/opt/homebrew/bin" ] && export PATH="/opt/homebrew/bin:$PATH"
@@ -9,9 +10,3 @@ if [ -d "$HOME/go" ]; then
   export PATH="$PATH:$GOPATH/bin"
 fi
 [ -d "$GOROOT/bin" ] && export PATH="$PATH:$GOROOT/bin"
-
-# LM Studio CLI
-[ -d "$HOME/.lmstudio/bin" ] && export PATH="$PATH:$HOME/.lmstudio/bin"
-
-# Bun
-[ -d "$HOME/.bun/bin" ] && export PATH="$PATH:$HOME/.bun/bin"
