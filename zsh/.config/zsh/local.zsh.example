@@ -1,0 +1,9 @@
+# Machine-specific configuration
+# Copy this to local.zsh and customize (local.zsh is gitignored)
+
+# Example: Work-specific settings
+# export WORK_API_KEY="..."
+# alias vpn="..."
+
+# Example: Machine-specific paths
+# export PATH="$PATH:/some/local/path"
