@@ -7,10 +7,8 @@ Modular zsh configuration. The main `~/.zshrc` sources all `*.zsh` files from th
 ```
 ~/.config/zsh/
 ├── plugins.zsh      # Oh My Zsh, theme, plugins
-├── path.zsh         # Universal PATH (homebrew, go)
 ├── aliases.zsh      # Shell aliases
 ├── keybindings.zsh  # Vi mode, search bindings
-├── completions.zsh  # (placeholder, use local.zsh)
 ├── local.zsh        # Machine-specific paths/completions (gitignored)
 └── install.sh       # Installs oh-my-zsh and plugins
 ```
