@@ -61,11 +61,12 @@ cd ~/dotfiles
 
 ### 4. Build & Apply
 ```bash
-# First time: bootstrap nix-darwin
-nix run nix-darwin -- switch --flake .
+# First time: bootstrap nix-darwin (needs sudo)
+sudo nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake .
 
 # After that, use:
-darwin-rebuild switch --flake .
+darwin-rebuild switch --flake ~/dotfiles
+# Or just: rebuild
 ```
 
 ## Day-to-Day Usage
@@ -170,6 +171,11 @@ Create a `flake.nix` in the project for project-specific dependencies.
 Make sure flakes are enabled:
 ```bash
 echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+```
+
+For sudo commands, add the flag inline:
+```bash
+sudo nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake .
 ```
 
 ### Homebrew Not Found
