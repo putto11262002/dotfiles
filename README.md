@@ -1,205 +1,187 @@
 # Dotfiles
 
-Personal configuration files managed with [GNU Stow](https://www.gnu.org/software/stow/).
+macOS configuration managed with [Nix](https://nixos.org/), [nix-darwin](https://github.com/LnL7/nix-darwin), and [home-manager](https://github.com/nix-community/home-manager).
 
-## How it works
+## What's Included
 
-- The repo contains **packages** (top-level directories like `nvim/`, `zsh/`)
-- Each package mirrors the directory structure relative to `$HOME`
-- Stow creates symlinks from `$HOME` pointing into this repo
+### System (nix-darwin)
+- macOS system settings (dock, finder, keyboard, trackpad)
+- Homebrew casks (GUI apps)
+- Fonts (Nerd Fonts)
+- Touch ID for sudo
 
-Example:
-```
-dotfiles/nvim/.config/nvim/init.lua
-       ↓ stow
-~/.config/nvim/init.lua -> ~/dotfiles/nvim/.config/nvim/init.lua
-```
-
-## Prerequisites
-
-Install these manually before using:
-
-- `git`
-- `stow` (GNU Stow)
-
-```bash
-# macOS
-brew install stow
-
-# Ubuntu/Debian
-sudo apt install stow
-```
+### User (home-manager)
+- **Shell**: Zsh with Oh My Zsh, syntax highlighting, autosuggestions
+- **Editor**: Neovim with kickstart-based config
+- **Terminal**: tmux with Nord theme
+- **Git**: Delta for diffs, lazygit
+- **Dev Tools**: Node.js, Go, Rust, Python, Bun, pnpm
+- **CLI**: ripgrep, fzf, eza, bat, zoxide
+- **Window Manager**: Aerospace
 
 ## Structure
 
 ```
 dotfiles/
-  nvim/                 # package
-    .config/
-      nvim/
-        init.lua
-        lua/
-          ...
-  zsh/                  # package
-    .zshrc
-  bootstrap.sh
-  sync.sh
-  add.sh
-  status.sh
-  .gitignore
+├── flake.nix              # Entry point
+├── flake.lock             # Locked versions
+├── config/                # App configs (symlinked by Nix)
+│   ├── nvim/              # Neovim config
+│   └── aerospace.toml     # Aerospace config
+└── nix/
+    ├── darwin/            # macOS system config
+    │   └── default.nix
+    └── home/              # User config (home-manager)
+        ├── default.nix
+        ├── packages.nix   # Dev tools & CLI
+        ├── shell.nix      # Zsh config
+        ├── git.nix        # Git config
+        ├── tmux.nix       # tmux config
+        └── neovim.nix     # Neovim setup
 ```
 
-Each top-level directory is a "package". Files inside mirror their location relative to `$HOME`.
+## Setup on a New Mac
 
-## Scripts
-
-Simple helper scripts. They fail fast with a message if something is wrong.
-
-| Script | What it does |
-|--------|--------------|
-| `./bootstrap.sh` | Stow all packages (requires stow installed) |
-| `./sync.sh` | Pull and restow (requires clean working tree) |
-| `./add.sh <pkg> <path>` | Add a config to a package |
-| `./status.sh` | List packages and their stow status |
-
-## Setup on a new machine
-
-1. Install prerequisites (git, stow)
-2. Clone and bootstrap:
-
+### 1. Install Nix
 ```bash
-git clone <repo> ~/dotfiles
+curl -L https://nixos.org/nix/install | sh
+```
+
+### 2. Enable Flakes
+```bash
+mkdir -p ~/.config/nix
+echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+```
+
+### 3. Clone Dotfiles
+```bash
+git clone https://github.com/putto11262002/dotfiles ~/dotfiles
 cd ~/dotfiles
-./bootstrap.sh
 ```
 
-If stow reports conflicts, see [Handling conflicts](#handling-conflicts).
+### 4. Build & Apply
+```bash
+# First time: bootstrap nix-darwin
+nix run nix-darwin -- switch --flake .
 
-## Adding a new config
+# After that, use:
+darwin-rebuild switch --flake .
+```
 
-Use the helper script:
+## Day-to-Day Usage
+
+### Apply Changes
+```bash
+# After editing any nix files:
+darwin-rebuild switch --flake ~/dotfiles
+
+# Or use the alias:
+rebuild
+```
+
+### Update Packages
+```bash
+# Update flake inputs (nixpkgs, home-manager, etc.)
+nix flake update ~/dotfiles
+
+# Or use the alias:
+update
+
+# Then rebuild
+rebuild
+```
+
+### Add a Package
+Edit `nix/home/packages.nix`:
+```nix
+home.packages = with pkgs; [
+  # ... existing packages
+  newpackage    # Add your package
+];
+```
+Then run `rebuild`.
+
+### Add a Homebrew Cask (GUI App)
+Edit `nix/darwin/default.nix`:
+```nix
+homebrew.casks = [
+  # ... existing casks
+  "new-app"    # Add your app
+];
+```
+Then run `rebuild`.
+
+### Clean Up Old Generations
+```bash
+# Remove old generations (saves disk space)
+nix-collect-garbage -d
+
+# Or use the alias:
+cleanup
+```
+
+## Customization
+
+### Machine-Specific Config
+To support multiple machines, create host-specific configs in `nix/hosts/`:
+
+```nix
+# nix/hosts/work-macbook.nix
+{ ... }: {
+  # Override settings for work machine
+  homebrew.casks = [
+    "slack"
+    "zoom"
+  ];
+}
+```
+
+Then update `flake.nix` to include a new darwinConfiguration.
+
+### Per-Project Environments
+Use `direnv` with `.envrc` files:
 
 ```bash
-./add.sh zsh ~/.zshrc
-./add.sh alacritty ~/.config/alacritty
+# In a project directory:
+echo "use flake" > .envrc
+direnv allow
 ```
 
-Or manually:
+Create a `flake.nix` in the project for project-specific dependencies.
 
-1. Create package structure:
-   ```bash
-   mkdir -p ~/dotfiles/zsh
-   ```
+## Aliases
 
-2. Copy config into package (preserving path relative to $HOME):
-   ```bash
-   cp ~/.zshrc ~/dotfiles/zsh/.zshrc
-   ```
+| Alias | Command |
+|-------|---------|
+| `rebuild` | `darwin-rebuild switch --flake ~/dotfiles` |
+| `update` | `nix flake update ~/dotfiles` |
+| `cleanup` | `nix-collect-garbage -d` |
+| `v` / `vim` | `nvim` |
+| `ll` | `eza -la --icons --git` |
+| `cat` | `bat` |
+| `cd` | `z` (zoxide) |
+| `g` | `git` |
+| `k` | `kubectl` |
+| `dc` | `docker-compose` |
 
-3. Remove original:
-   ```bash
-   rm ~/.zshrc
-   ```
+## Troubleshooting
 
-4. Stow:
-   ```bash
-   cd ~/dotfiles
-   stow -t "$HOME" zsh
-   ```
-
-5. Update `.gitignore` if the config generates cache/temp files:
-   ```bash
-   git status  # check for junk files
-   # edit .gitignore as needed
-   ```
-
-6. Commit:
-   ```bash
-   git add -A
-   git commit -m "feat: add zsh config"
-   ```
-
-## Syncing changes
-
-On another machine (or after pushing changes from elsewhere):
-
+### "experimental-features" Error
+Make sure flakes are enabled:
 ```bash
-cd ~/dotfiles
-./sync.sh
+echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
 ```
 
-This requires a clean working tree. If you have uncommitted changes:
-
+### Homebrew Not Found
+Install Homebrew first (nix-darwin manages it but doesn't install it):
 ```bash
-git stash
-./sync.sh
-git stash pop
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-## Day-to-day edits
-
-Edit configs through the symlinked path (e.g. `~/.config/nvim/init.lua`) or directly in the repo. Changes go to the repo either way.
-
+### Symlink Conflicts
+If you have existing configs that conflict:
 ```bash
-cd ~/dotfiles
-git add -A
-git commit -m "feat: update nvim keymaps"
-git push
+# Back up and remove the conflicting file
+mv ~/.config/nvim ~/.config/nvim.bak
+rebuild
 ```
-
-## Handling conflicts
-
-If stow refuses with "conflict", a real file exists at the target path.
-
-```bash
-# Back up the existing file
-mv ~/.zshrc ~/.zshrc.bak
-
-# Stow
-cd ~/dotfiles
-stow -t "$HOME" zsh
-
-# Compare and merge if needed, then remove backup
-diff ~/.zshrc.bak ~/.zshrc
-rm ~/.zshrc.bak
-```
-
-## Removing a package
-
-Unstow removes symlinks (does not delete repo files):
-
-```bash
-cd ~/dotfiles
-stow -D -t "$HOME" nvim
-```
-
-## Manual stow commands
-
-```bash
-stow -t "$HOME" <package>       # link (install)
-stow -D -t "$HOME" <package>    # unlink (uninstall)
-stow -R -t "$HOME" <package>    # restow (unlink + link)
-stow -n -v -t "$HOME" <package> # dry run (preview)
-```
-
-## Machine-specific configs and secrets
-
-**Never commit secrets** (API keys, tokens, private keys).
-
-Options:
-- Use `*.local` files that are gitignored (e.g. `.zshrc` sources `.zshrc.local`)
-- Keep a `local/` package that is gitignored and only exists on that machine
-
-## Updating .gitignore
-
-Many tools generate cache/temp files inside config directories. When adding a new config:
-
-1. Run `git status` to spot generated files
-2. Add patterns to `.gitignore`:
-   ```gitignore
-   # Neovim
-   nvim/.config/nvim/spell/
-   nvim/.config/nvim/.luarc.json
-   nvim/.config/nvim/plugin/
-   ```
-3. Only track files you intentionally configured
