@@ -16,7 +16,6 @@
       sensible
       nord
       resurrect
-      continuum
       {
         plugin = continuum;
         extraConfig = ''

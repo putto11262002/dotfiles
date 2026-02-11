@@ -156,9 +156,11 @@
   # Enable Touch ID for sudo
   security.pam.enableSudoTouchIdAuth = true;
 
-  # Fonts
+  # Fonts (nerd-fonts are now separate packages in nixpkgs)
   fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" "Hack" ]; })
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.fira-code
+    nerd-fonts.hack
   ];
 
   # Add shells
