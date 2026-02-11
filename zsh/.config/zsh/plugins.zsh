@@ -1,7 +1,7 @@
 # Oh My Zsh configuration
 
 export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME="af-magic"
+ZSH_THEME="robbyrussell"
 
 plugins=(
   git
