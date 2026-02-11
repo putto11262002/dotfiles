@@ -3,10 +3,13 @@
 {
   programs.git = {
     enable = true;
-    userName = "Put Suthisrisinlpa";
-    userEmail = "putto11262002@gmail.com";  # Update if needed
 
-    extraConfig = {
+    # Settings (new format)
+    settings = {
+      user = {
+        name = "Put Suthisrisinlpa";
+        email = "putto11262002@gmail.com";
+      };
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = false;
@@ -16,30 +19,19 @@
       };
       merge.conflictstyle = "diff3";
       diff.colorMoved = "default";
-    };
 
-    # Delta for better diffs
-    delta = {
-      enable = true;
-      options = {
-        navigate = true;
-        line-numbers = true;
-        syntax-theme = "Nord";
-        side-by-side = false;
+      # Aliases (now under settings)
+      alias = {
+        st = "status";
+        co = "checkout";
+        br = "branch";
+        ci = "commit";
+        unstage = "reset HEAD --";
+        last = "log -1 HEAD";
+        lg = "log --oneline --graph --decorate";
+        amend = "commit --amend --no-edit";
+        undo = "reset --soft HEAD~1";
       };
-    };
-
-    # Aliases
-    aliases = {
-      st = "status";
-      co = "checkout";
-      br = "branch";
-      ci = "commit";
-      unstage = "reset HEAD --";
-      last = "log -1 HEAD";
-      lg = "log --oneline --graph --decorate";
-      amend = "commit --amend --no-edit";
-      undo = "reset --soft HEAD~1";
     };
 
     # Ignore patterns
@@ -57,6 +49,18 @@
       "*.pyc"
       ".direnv/"
     ];
+  };
+
+  # Delta for better diffs (now separate program)
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = {
+      navigate = true;
+      line-numbers = true;
+      syntax-theme = "Nord";
+      side-by-side = false;
+    };
   };
 
   # GitHub CLI

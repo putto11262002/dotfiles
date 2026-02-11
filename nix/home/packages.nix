@@ -100,7 +100,7 @@
 
     # Nix
     nil
-    nixfmt-rfc-style
+    nixfmt
 
     # General
     nodePackages.yaml-language-server

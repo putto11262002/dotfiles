@@ -5,9 +5,9 @@
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
-      # Optimize storage
-      auto-optimise-store = true;
     };
+    # Optimize storage (new option name)
+    optimise.automatic = true;
     # Garbage collection
     gc = {
       automatic = true;
@@ -18,6 +18,9 @@
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+
+  # Primary user (required for user-specific settings)
+  system.primaryUser = "putsuthisrisinlpa";
 
   # System packages (available to all users)
   environment.systemPackages = with pkgs; [
@@ -153,8 +156,8 @@
     stateVersion = 5;
   };
 
-  # Enable Touch ID for sudo
-  security.pam.enableSudoTouchIdAuth = true;
+  # Enable Touch ID for sudo (new option name)
+  security.pam.services.sudo_local.touchIdAuth = true;
 
   # Fonts (nerd-fonts are now separate packages in nixpkgs)
   fonts.packages = with pkgs; [

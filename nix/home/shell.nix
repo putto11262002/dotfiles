@@ -7,6 +7,9 @@
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
+    # Use XDG config directory for zsh files
+    dotDir = "${config.xdg.configHome}/zsh";
+
     # History settings
     history = {
       size = 50000;
@@ -74,7 +77,7 @@
     };
 
     # Extra init (runs after oh-my-zsh)
-    initExtra = ''
+    initContent = ''
       # Vi mode
       bindkey -v
       bindkey ^R history-incremental-search-backward
