@@ -28,6 +28,7 @@
         "git"
         "docker"
         "kubectl"
+        "vi-mode"  # Better vi mode with cursor indicator
       ];
     };
 
