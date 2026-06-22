@@ -17,20 +17,19 @@ dotfiles/nvim/.config/nvim/init.lua
 
 ## Prerequisites
 
-Install these manually before using:
+Install this manually before cloning:
 
 - `git`
-- `stow` (GNU Stow)
 
 ```bash
 # macOS
-brew install stow
+git --version
 
 # Ubuntu/Debian
-sudo apt install stow
+sudo apt install git
 ```
 
-On macOS, this repo also includes a `Brewfile` for the terminal stack:
+On macOS, `./install-macos.sh` uses the included `Brewfile` to install the terminal stack:
 
 ```bash
 brew bundle --file ~/dotfiles/Brewfile
@@ -40,14 +39,28 @@ brew bundle --file ~/dotfiles/Brewfile
 
 ```
 dotfiles/
+  aerospace/            # package
+    .aerospace.toml
+  kitty/                # package
+    .config/
+      kitty/
+        kitty.conf
+        current-theme.conf
   nvim/                 # package
     .config/
       nvim/
         init.lua
         lua/
           ...
+  tmux/                 # package
+    .tmux.conf
   zsh/                  # package
+    .config/
+      zsh/
+        ...
     .zshrc
+  Brewfile
+  install-macos.sh
   bootstrap.sh
   sync.sh
   add.sh
@@ -63,6 +76,7 @@ Simple helper scripts. They fail fast with a message if something is wrong.
 
 | Script | What it does |
 |--------|--------------|
+| `./install-macos.sh` | Install Homebrew deps, back up conflicts, stow packages, install tmux/nvim plugins |
 | `./bootstrap.sh` | Stow all packages (requires stow installed) |
 | `./sync.sh` | Pull and restow (requires clean working tree) |
 | `./add.sh <pkg> <path>` | Add a config to a package |
@@ -79,7 +93,26 @@ cd ~/dotfiles
 ./install-macos.sh  # macOS
 ```
 
+For non-macOS machines, install `stow` manually and run:
+
+```bash
+cd ~/dotfiles
+./bootstrap.sh
+```
+
 If stow reports conflicts, see [Handling conflicts](#handling-conflicts).
+
+## Terminal modes
+
+Zsh vi editing is enabled in `zsh/.config/zsh/keybindings.zsh`. It is sourced after Oh My Zsh so `bindkey -v` remains active.
+
+Tmux vi behavior is configured in `tmux/.tmux.conf`:
+
+```tmux
+set -g mode-keys vi
+set -g status-keys vi
+set -sg escape-time 10
+```
 
 ## Adding a new config
 
