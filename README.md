@@ -76,8 +76,7 @@ Simple helper scripts. They fail fast with a message if something is wrong.
 ```bash
 git clone <repo> ~/dotfiles
 cd ~/dotfiles
-brew bundle --file ./Brewfile  # macOS
-./bootstrap.sh
+./install-macos.sh  # macOS
 ```
 
 If stow reports conflicts, see [Handling conflicts](#handling-conflicts).
