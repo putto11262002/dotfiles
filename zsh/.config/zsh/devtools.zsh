@@ -8,6 +8,9 @@ path_prepend() {
   esac
 }
 
+path_prepend "/opt/homebrew/bin"
+path_prepend "/usr/local/bin"
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"

@@ -17,6 +17,14 @@ if [[ "$(uname)" != "Darwin" ]]; then
 fi
 
 if ! command -v brew &>/dev/null; then
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    export PATH="/opt/homebrew/bin:$PATH"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    export PATH="/usr/local/bin:$PATH"
+  fi
+fi
+
+if ! command -v brew &>/dev/null; then
   echo "Error: Homebrew is not installed"
   echo "Install it from https://brew.sh, then rerun this script"
   exit 1
