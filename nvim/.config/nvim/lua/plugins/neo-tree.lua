@@ -17,10 +17,11 @@ return {
     enable_git_status = true,
     enable_diagnostics = true,
     filesystem = {
+      use_libuv_file_watcher = true, -- auto-refresh the tree when files change on disk
       filtered_items = {
         visible = true, -- This is what you want: If you set this to `true`, all "hide" just mean "dimmed out"
         hide_dotfiles = false,
-        hide_gitignored = true,
+        hide_gitignored = false,
       },
       -- filtered_items = {
       --   hide_dotfiles = false,
@@ -61,7 +62,8 @@ return {
       },
     },
   },
-  config = function()
+  config = function(_, opts)
+    require('neo-tree').setup(opts)
     neo_tree_command = require 'neo-tree.command'
     vim.keymap.set('n', '<leader>ef', function()
       neo_tree_command.execute {

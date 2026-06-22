@@ -3,8 +3,9 @@
 
 ZSH_CONFIG="$HOME/.config/zsh"
 
-# Source all config modules
+# Source all tracked config modules. local.zsh is machine-specific and sourced once below.
 for file in "$ZSH_CONFIG"/*.zsh; do
+  [ "$(basename "$file")" = "local.zsh" ] && continue
   [ -r "$file" ] && source "$file"
 done
 

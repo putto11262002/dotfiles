@@ -211,13 +211,16 @@ return {
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'ellisonleao/gruvbox.nvim',
+    'rose-pine/neovim',
+    name = 'rose-pine',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
-      require('gruvbox').setup {
-        transparent_mode = true,
+      require('rose-pine').setup {
+        variant = 'main', -- 'main' (dark), 'moon' (softer dark), 'dawn' (light)
+        dark_variant = 'main',
+        disable_background = true, -- transparent background
       }
-      vim.cmd.colorscheme 'gruvbox'
+      vim.cmd.colorscheme 'rose-pine'
     end,
   },
 

@@ -30,6 +30,12 @@ brew install stow
 sudo apt install stow
 ```
 
+On macOS, this repo also includes a `Brewfile` for the terminal stack:
+
+```bash
+brew bundle --file ~/dotfiles/Brewfile
+```
+
 ## Structure
 
 ```
@@ -70,6 +76,7 @@ Simple helper scripts. They fail fast with a message if something is wrong.
 ```bash
 git clone <repo> ~/dotfiles
 cd ~/dotfiles
+brew bundle --file ./Brewfile  # macOS
 ./bootstrap.sh
 ```
 
