@@ -5,6 +5,7 @@ return {
     'nvim-lua/plenary.nvim',
     'MunifTanjim/nui.nvim',
     'nvim-tree/nvim-web-devicons',
+    'echasnovski/mini.icons', -- routed via mock in plugins/icons.lua
   },
   lazy = false, -- neo-tree will lazily load itself
   keys = {
@@ -41,9 +42,9 @@ return {
     },
     default_component_configs = {
       icon = {
-        folder_closed = '',
-        folder_open = '',
-        folder_empty = '󰜌',
+        folder_closed = '▸',
+        folder_open = '▾',
+        folder_empty = '',
         provider = function(icon, node, state) -- default icon provider utilizes nvim-web-devicons if available
           if node.type == 'file' or node.type == 'terminal' then
             local success, web_devicons = pcall(require, 'nvim-web-devicons')
@@ -64,6 +65,15 @@ return {
   },
   config = function(_, opts)
     require('neo-tree').setup(opts)
+
+    -- transparent explorer background (re-apply on colorscheme reload)
+    local transparent_bg = function()
+      vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE', ctermbg = 'NONE' })
+      vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE', ctermbg = 'NONE' })
+    end
+    transparent_bg()
+    vim.api.nvim_create_autocmd('ColorScheme', { callback = transparent_bg })
+
     neo_tree_command = require 'neo-tree.command'
     vim.keymap.set('n', '<leader>ef', function()
       neo_tree_command.execute {
