@@ -206,21 +206,25 @@ return {
   --   },
   -- },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
+  { -- Colorscheme: Kanagawa (wave) — soft, warm, Japanese-inspired dark.
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'rose-pine/neovim',
-    name = 'rose-pine',
+    'rebelot/kanagawa.nvim',
+    name = 'kanagawa',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
-      require('rose-pine').setup {
-        variant = 'main', -- 'main' (dark), 'moon' (softer dark), 'dawn' (light)
-        dark_variant = 'main',
-        disable_background = true, -- transparent background
+      require('kanagawa').setup {
+        theme = 'dragon', -- 'dragon' (deeper dark) | 'wave' (default) | 'lotus' (light)
+        background = { dark = 'dragon', light = 'lotus' },
+        transparent = true, -- transparent background (kitty blur shows through)
+        terminalColors = true,
+        dimInactive = false,
+        colors = {
+          theme = {
+            all = { ui = { bg_gutter = 'none' } }, -- no gutter/column bg tint
+          },
+        },
       }
-      vim.cmd.colorscheme 'rose-pine'
+      vim.cmd.colorscheme 'kanagawa'
     end,
   },
 
