@@ -71,23 +71,5 @@ vim.keymap.set('n', '<leader>w', '<cmd>write<cr>', { desc = 'Buffer [W]rite' })
 -- Save all buffers (updated as requested)
 vim.keymap.set('n', '<leader>aw', '<cmd>wall<cr>', { desc = '[A]ll [W]rite' })
 
--- Quick buffer switching with Ctrl+<number> pattern
--- Helper function for ordinal buffer switching
-local function switch_to_ordinal_buffer(ordinal)
-  return function()
-    require('bufferline').go_to(ordinal, true)
-  end
-end
-
-vim.keymap.set('n', '<leader>b1', switch_to_ordinal_buffer(1), { desc = 'Buffer 1' })
-vim.keymap.set('n', '<leader>b2', switch_to_ordinal_buffer(2), { desc = 'Buffer 2' })
-vim.keymap.set('n', '<leader>b3', switch_to_ordinal_buffer(3), { desc = 'Buffer 3' })
-vim.keymap.set('n', '<leader>b4', switch_to_ordinal_buffer(4), { desc = 'Buffer 4' })
-vim.keymap.set('n', '<leader>b5', switch_to_ordinal_buffer(5), { desc = 'Buffer 5' })
-vim.keymap.set('n', '<leader>b6', switch_to_ordinal_buffer(6), { desc = 'Buffer 6' })
-vim.keymap.set('n', '<leader>b7', switch_to_ordinal_buffer(7), { desc = 'Buffer 7' })
-vim.keymap.set('n', '<leader>b8', switch_to_ordinal_buffer(8), { desc = 'Buffer 8' })
-vim.keymap.set('n', '<leader>b9', switch_to_ordinal_buffer(9), { desc = 'Buffer 9' })
-
 -- Force close buffer (discard changes)
 vim.keymap.set('n', '<leader>bD', '<cmd>bdelete!<cr>', { desc = '[B]uffer [D]elete force' })
