@@ -215,14 +215,9 @@ return {
       require('kanagawa').setup {
         theme = 'dragon', -- 'dragon' (deeper dark) | 'wave' (default) | 'lotus' (light)
         background = { dark = 'dragon', light = 'lotus' },
-        transparent = true, -- transparent background (kitty blur shows through)
+        transparent = false,
         terminalColors = true,
         dimInactive = false,
-        colors = {
-          theme = {
-            all = { ui = { bg_gutter = 'none' } }, -- no gutter/column bg tint
-          },
-        },
       }
       vim.cmd.colorscheme 'kanagawa'
     end,

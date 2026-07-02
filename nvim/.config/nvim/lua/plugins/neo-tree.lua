@@ -66,14 +66,6 @@ return {
   config = function(_, opts)
     require('neo-tree').setup(opts)
 
-    -- transparent explorer background (re-apply on colorscheme reload)
-    local transparent_bg = function()
-      vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE', ctermbg = 'NONE' })
-      vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE', ctermbg = 'NONE' })
-    end
-    transparent_bg()
-    vim.api.nvim_create_autocmd('ColorScheme', { callback = transparent_bg })
-
     neo_tree_command = require 'neo-tree.command'
     vim.keymap.set('n', '<leader>ef', function()
       neo_tree_command.execute {
