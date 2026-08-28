@@ -213,8 +213,8 @@ return {
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
       require('kanagawa').setup {
-        theme = 'dragon', -- 'dragon' (deeper dark) | 'wave' (default) | 'lotus' (light)
-        background = { dark = 'dragon', light = 'lotus' },
+        theme = 'wave', -- 'dragon' (deeper dark) | 'wave' (default) | 'lotus' (light)
+        background = { dark = 'wave', light = 'lotus' },
         transparent = false,
         terminalColors = true,
         dimInactive = false,
